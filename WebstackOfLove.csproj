@@ -56,9 +56,10 @@
     <Content Include="css\site.css" />
     <Content Include="default.htm" />
     <Content Include="favicon.ico" />
-    <Content Include="Web.config">
-      <SubType>Designer</SubType>
-    </Content>
+    <Content Include="js\jquery-1.7.2.js" />
+    <Content Include="js\knockout-2.1.0.js" />
+    <Content Include="js\todo.js" />
+    <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
