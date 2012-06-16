@@ -6,7 +6,7 @@
     <link rel="stylesheet" type="text/css" href="css/site.css" />
 </head>
 <body>
-    <form data-bind="submit: add">
+    <form data-bind="submit: sendCreate">
         Task:
         <input type="text" name="title" id="title" data-bind="value: addItemTitle, valueUpdate: 'afterkeydown'" />
         <input type="submit" title="Add a new item" value="Add" disabled="disabled" data-bind="enable: addItemTitle().length > 0" />
