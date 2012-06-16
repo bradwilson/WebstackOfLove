@@ -1,0 +1,43 @@
+﻿body {
+    font-family: "Segoe UI";
+    margin: 0;
+    padding: 0;
+}
+
+table, tr {
+    margin: 0;
+    padding: 0;
+}
+
+td {
+    margin: 0;
+    padding: 0 0 0 0.7em;
+}
+
+form {
+    background-color: #ccf;
+    padding: 0.5em 0.75em;
+    font-size: 150%;
+}
+
+    form input {
+        font-size: inherit;
+        margin-left: 0.25em;
+    }
+
+        form input[type='text'] {
+            width: 12em;
+        }
+
+        form input[type='submit'] {
+            padding: 0.1em 0.5em;
+        }
+
+section {
+    margin: 1em;
+}
+
+.finished {
+    color: #999;
+    text-decoration: line-through;
+}
