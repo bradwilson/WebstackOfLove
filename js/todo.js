@@ -5,7 +5,8 @@ function ToDoViewModel() {
     var self = this;
 
     function ToDoItem(root, id, title, finished) {
-        var self = this;
+        var self = this,
+            updating = false;
 
         self.id = id;
         self.title = ko.observable(title);
@@ -15,8 +16,17 @@ function ToDoViewModel() {
             root.sendDelete(self);
         };
 
+        self.update = function (title, finished) {
+            updating = true;
+            self.title(title);
+            self.finished(finished);
+            updating = false;
+        };
+
         self.finished.subscribe(function () {
-            root.sendUpdate(self);
+            if (!updating) {
+                root.sendUpdate(self);
+            }
         });
     };
 
@@ -31,16 +41,18 @@ function ToDoViewModel() {
         self.items.remove(function (item) { return item.id === id; });
     };
 
+    self.update = function (id, title, finished) {
+        var oldItem = ko.utils.arrayFirst(self.items(), function (i) { return i.id === id; });
+        if (oldItem) {
+            oldItem.update(title, finished);
+        }
+    };
+
     self.sendCreate = function () {
         $.ajax({
             url: "/api/todo",
             data: { 'Title': self.addItemTitle(), 'Finished': false },
-            type: "POST",
-            statusCode: {
-                201: function (data) {
-                    self.add(data.ID, data.Title, data.Finished);
-                }
-            }
+            type: "POST"
         });
 
         self.addItemTitle("");
@@ -49,10 +61,7 @@ function ToDoViewModel() {
     self.sendDelete = function (item) {
         $.ajax({
             url: "/api/todo/" + item.id,
-            type: "DELETE",
-            success: function (data) {
-                self.remove(item.id);
-            }
+            type: "DELETE"
         });
     }
 
@@ -66,9 +75,22 @@ function ToDoViewModel() {
 };
 
 $(function () {
-    var viewModel = new ToDoViewModel();
+    var viewModel = new ToDoViewModel(),
+        hub = $.connection.todo;
 
     ko.applyBindings(viewModel);
+
+    hub.addItem = function (item) {
+        viewModel.add(item.ID, item.Title, item.Finished);
+    };
+    hub.deleteItem = function (id) {
+        viewModel.remove(id);
+    };
+    hub.updateItem = function (item) {
+        viewModel.update(item.ID, item.Title, item.Finished);
+    };
+
+    $.connection.hub.start();
 
     $.get("/api/todo", function (items) {
         $.each(items, function (idx, item) {

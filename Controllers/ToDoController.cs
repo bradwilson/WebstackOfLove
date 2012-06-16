@@ -5,12 +5,13 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Web.Http;
+using WebstackOfLove.Hubs;
 using WebstackOfLove.Models;
 
 namespace WebstackOfLove.Controllers
 {
     [InvalidModelStateFilter]
-    public class ToDoController : ApiController
+    public class ToDoController : ApiControllerWithHub<ToDoHub>
     {
         private static List<ToDoItem> db = new List<ToDoItem>
         {
@@ -48,6 +49,9 @@ namespace WebstackOfLove.Controllers
                 item.ID = Interlocked.Increment(ref lastId);
                 db.Add(item);
 
+                // Notify the connected clients
+                Hub.Clients.addItem(item);
+
                 // Return the new item, inside a 201 response
                 var response = Request.CreateResponse(HttpStatusCode.Created, item);
                 string link = Url.Link("apiRoute", new { controller = "todo", id = item.ID });
@@ -71,6 +75,9 @@ namespace WebstackOfLove.Controllers
                 toUpdate.Title = item.Title;
                 toUpdate.Finished = item.Finished;
 
+                // Notify the connected clients
+                Hub.Clients.updateItem(toUpdate);
+
                 // Return the updated item
                 return toUpdate;
             }
@@ -81,11 +88,13 @@ namespace WebstackOfLove.Controllers
             lock (db)
             {
                 int removeCount = db.RemoveAll(i => i.ID == id);
+                if (removeCount <= 0)
+                    return Request.CreateResponse(HttpStatusCode.NotFound);
 
-                return
-                    removeCount > 0
-                        ? Request.CreateResponse(HttpStatusCode.OK)
-                        : Request.CreateResponse(HttpStatusCode.NotFound);
+                // Notify the connected clients
+                Hub.Clients.deleteItem(id);
+
+                return Request.CreateResponse(HttpStatusCode.OK);
             }
         }
     }
